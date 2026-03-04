@@ -1,0 +1,19 @@
+#cloud-config
+users:
+  - name: shawn
+    shell: /bin/bash
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    lock_passwd: true
+    ssh_import_id:
+      - gh:shawngmc
+
+ssh_pwauth: false
+disable_root: true
+
+runcmd:
+  - apt-get update
+  - mkdir -p /mnt/config
+  - mount -t virtiofs config-tag /mnt/config
+  - echo "config-tag /mnt/config virtiofs defaults,nofail 0 0" | sudo tee -a "/etc/fstab" > /dev/null
+  - echo "" | sudo tee -a "/etc/fstab" > /dev/null
+  - /mnt/config/prep.sh

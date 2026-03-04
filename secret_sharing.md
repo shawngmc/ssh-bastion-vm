@@ -79,7 +79,7 @@ qm set VM210 --virtiofs0 config-tag,size=1G
 # Create mount point
 mkdir -p /mnt/config
 # Mount
-mount -t virtiofs <tag> /mnt/config.
+mount -t virtiofs <tag> /mnt/config
 # Add to /etc/fstab for persistence: 
 echo "config_tag /mnt/config virtiofs defaults,nofail 0 0" | sudo tee -a "/etc/fstab" > /dev/null
 # Add an empty newline at the end of fstab to avoid warnings
