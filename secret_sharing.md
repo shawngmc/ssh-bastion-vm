@@ -1,5 +1,96 @@
-Am I still running vault?
+Ways to share data
+- Vault - not running right now, still has bootstrap issue
+- SSH Host Key Cubbyhole token - still requires a back-and-forth
+- Qemu-guest-agent - Host-to-VM only, manual
+- VirtIOFS - Linux-only, could set up per VM?, then pull in cloud init?... but I don't want to leave it mounted https://pve.proxmox.com/pve-docs/chapter-qm.html#qm_virtiofs
+- Cloud-init Drive - this makes sense; it is essentially a virtual ISO, but automated. https://pve.proxmox.com/wiki/Cloud-Init_FAQ
+- Virtual Disk Image (ISO/IMG): Create a small, encrypted ISO file containing the secrets on the host, and mount this ISO to the virtual machine's CD/DVD drive, then eject
+- SOPS - Allows storing encrypted blob in file then processing file https://getsops.io/docs/ ; requires a decryption key
+- QEMU Secrets - https://www.qemu.org/docs/master/system/secrets.html There's no WebUI for this; it must be done via Host shell pre-launch (either by editing /etc/pve/qemu-server/<VMID>.conf or at runtime via qm set)
 
+
+## Host FS Example notes
+- Using a JSON file
+- Local storage on host - /var/lib/vz/snippets ???
+  
+## QEMU Secrets
+### Prep secret
+1. Log in to your Proxmox shell.
+1. Create a file to pass in; example for these in /var/lib/vz/snippets/<vmid>-config.json
+
+### Set on QEMU FW_CFG programatically
+1. Log in to your Proxmox shell.
+1. qm set <vmid> --args "-fw_cfg name=opt/config.json,file=/path/to/your/config.json"
+
+  
+### Add via config edit - TODO!
+1. Edit the configuration file: ???
+1. Add a line using the args parameter to pass the QEMU fw_cfg argument:
+bash
+args: -fw_cfg name=opt/config.json,file=/var/lib/vz/snippets/<vmid>-config.json
+
+### Accessing
+Should just be visible in the guest at /sys/firmware/qemu_fw_cfg/by_name/opt/config.json
+  
+  
+## VirtIOFS
+### Prep secret
+1. Log in to your Proxmox shell.
+1. Create a directory to pass in; example for these in /var/lib/vz/snippets/<vmid>/
+1. Create your file with secrets to pass in at /var/lib/vz/snippets/<vmid>/config.json
+  
+### Add via WebUI
+#### Prep the Directory Mapping 
+1. Navigate to Datacenter in the left sidebar.
+1. Scroll down and select Directory Mappings.
+1. Click the Add button at the top.
+1. In the dialog box, provide the following details:
+  - Name: A name for your mapping (e.g., VMShareMapping).
+  - Path: The absolute path to the directory on your Proxmox host (e.g., /mnt/VMShare).
+  - Node: Select the Proxmox node where the directory is located (if you have a cluster).
+  - Comment (Optional): A description for your reference.
+
+#### Add virtiofs to VM
+1. Shut down the VM.
+1. Go to Hardware > Add > VirtioFS.
+1. In the pop-up, select the directory ID you created (e.g., VMShare) from the dropdown.
+1. Configure options like caching if needed, and click Add.
+1. Start the VM.
+  
+### Add via CLI
+1. Add the directory mapping to the host ```pvesh create /datacenter/directory-mappings --name <share-name> --path /var/lib/vz/snippets/<vmid>/ --node <proxmox-node-name>
+```
+1. Add the FS to the node: ```qm set <VMID> --virtiofs0 <share-name>,size=<size-in-GiB>```
+  
+```
+# Add the directory mapping to the host
+# TODO: See if hostname is OK
+pvesh create /datacenter/directory-mappings --name config-tag --path /var/lib/vz/snippets/VM210/ --node $(hostname)
+# Add the FS to the node:
+qm set VM210 --virtiofs0 config-tag,size=1G
+  
+```
+  
+### Mount in instance
+1. Create mount point: mkdir -p /mnt/<mntpoint
+1. Mount: mount -t virtiofs <tag> /mnt/<mntpoint.
+1. Add to /etc/fstab for persistence: <tag> /mnt/<mntpoint> virtiofs defaults,nofail 0 0. Add an empty line to prevent warnings.
+```
+# Create mount point
+mkdir -p /mnt/config
+# Mount
+mount -t virtiofs <tag> /mnt/config.
+# Add to /etc/fstab for persistence: 
+echo "config_tag /mnt/config virtiofs defaults,nofail 0 0" | sudo tee -a "/etc/fstab" > /dev/null
+# Add an empty newline at the end of fstab to avoid warnings
+echo "" | sudo tee -a "/etc/fstab" > /dev/null
+```
+
+### Accessing
+Should just be visible in the guest at /mnt/<mntpoint>
+  
+## Junk  
+  
 Option 1 — HashiCorp Vault with a Cubbyhole token (recommended)
 The cubbyhole pattern: Proxmox generates a one-time Vault token at VM creation, passes it via Cloud-Init, VM uses it once to pull its secrets, token expires.
 On the Proxmox host at VM creation:
