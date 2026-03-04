@@ -11,12 +11,12 @@ Ways to share data
 
 ## Host FS Example notes
 - Using a JSON file
-- Local storage on host - /var/lib/vz/snippets ???
+- Local storage on host - /var/lib/vz/secrets ???
   
 ## QEMU Secrets
 ### Prep secret
 1. Log in to your Proxmox shell.
-1. Create a file to pass in; example for these in /var/lib/vz/snippets/<vmid>-config.json
+1. Create a file to pass in; example for these in /var/lib/vz/secrets/<vmid>-config.json
 
 ### Set on QEMU FW_CFG programatically
 1. Log in to your Proxmox shell.
@@ -27,7 +27,7 @@ Ways to share data
 1. Edit the configuration file: ???
 1. Add a line using the args parameter to pass the QEMU fw_cfg argument:
 bash
-args: -fw_cfg name=opt/config.json,file=/var/lib/vz/snippets/<vmid>-config.json
+args: -fw_cfg name=opt/config.json,file=/var/lib/vz/secrets/<vmid>/config.json
 
 ### Accessing
 Should just be visible in the guest at /sys/firmware/qemu_fw_cfg/by_name/opt/config.json
@@ -36,8 +36,8 @@ Should just be visible in the guest at /sys/firmware/qemu_fw_cfg/by_name/opt/con
 ## VirtIOFS
 ### Prep secret
 1. Log in to your Proxmox shell.
-1. Create a directory to pass in; example for these in /var/lib/vz/snippets/<vmid>/
-1. Create your file with secrets to pass in at /var/lib/vz/snippets/<vmid>/config.json
+1. Create a directory to pass in; example for these in /var/lib/vz/secrets/<vmid>/
+1. Create your file with secrets to pass in at /var/lib/vz/secrets/<vmid>/config.json
   
 ### Add via WebUI
 #### Prep the Directory Mapping 
@@ -46,7 +46,7 @@ Should just be visible in the guest at /sys/firmware/qemu_fw_cfg/by_name/opt/con
 1. Click the Add button at the top.
 1. In the dialog box, provide the following details:
   - Name: A name for your mapping (e.g., VMShareMapping).
-  - Path: The absolute path to the directory on your Proxmox host (e.g., /mnt/VMShare).
+  - Path: The absolute path to the directory on your Proxmox host (e.g., /var/lib/vz/secrets/<vmid>/).
   - Node: Select the Proxmox node where the directory is located (if you have a cluster).
   - Comment (Optional): A description for your reference.
 
@@ -58,14 +58,14 @@ Should just be visible in the guest at /sys/firmware/qemu_fw_cfg/by_name/opt/con
 1. Start the VM.
   
 ### Add via CLI
-1. Add the directory mapping to the host ```pvesh create /datacenter/directory-mappings --name <share-name> --path /var/lib/vz/snippets/<vmid>/ --node <proxmox-node-name>
+1. Add the directory mapping to the host ```pvesh create /datacenter/directory-mappings --name <share-name> --path /var/lib/vz/secrets/<vmid>/ --node <proxmox-node-name>
 ```
 1. Add the FS to the node: ```qm set <VMID> --virtiofs0 <share-name>,size=<size-in-GiB>```
   
 ```
 # Add the directory mapping to the host
 # TODO: See if hostname is OK
-pvesh create /datacenter/directory-mappings --name config-tag --path /var/lib/vz/snippets/VM210/ --node $(hostname)
+pvesh create /datacenter/directory-mappings --name config-tag --path /var/lib/vz/secrets/VM210/ --node $(hostname)
 # Add the FS to the node:
 qm set VM210 --virtiofs0 config-tag,size=1G
   
