@@ -12,7 +12,8 @@ sudo -u ${USERNAME} google-authenticator \
   --window-size=3 \
   --no-confirm \
   --qr-mode=UTF8 \
-  --secret=/home/${USERNAME}/.google_authenticator
+  --secret=/home/${USERNAME}/.google_authenticator \
+  --quiet
 
 chmod 400 /home/${USERNAME}/.google_authenticator
 chown ${USERNAME}:${USERNAME} /home/${USERNAME}/.google_authenticator
