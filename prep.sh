@@ -84,6 +84,9 @@ LogLevel VERBOSE
 # Host Keys
 HostKey /etc/ssh/ssh_host_ed25519_key
 HostKey /etc/ssh/ssh_host_rsa_key
+
+# User limitation
+AllowUsers shawn
 EOF
 
 # 30. Regenerate host keys (ed25519 + rsa-4096 only)
