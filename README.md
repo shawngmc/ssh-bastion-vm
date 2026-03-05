@@ -4,16 +4,7 @@
 - Mount start scripts and secrets in VirtIOFS
 
 ## Setup
-### Enable Snippets on Proxmox
-In proxmox shell:
-```
-mkdir -pv "/var/lib/vz/snippets/"
-```
-In WebUI:
-- Go to Datacenter -> Storage -> Add -> Directory.
-- ID: Name it (e.g., snippets).
-- Directory: Enter the path (e.g., /var/lib/vz/snippets).
-- Content: Select Snippets.
+Ensure you have the prereqs done!
 
 
 ### Create the VM
@@ -31,6 +22,8 @@ cd "/var/lib/vz/virtiofs/${ROLE_SLUG}/"
 cat {"foo": "bar"} > config.json
 wget https://github.com/shawngmc/ssh-bastion-vm/archive/refs/heads/main.zip
 unzip main.zip
+mv ssh-bastion-vm-main/* ./
+rm -rf ssh-bastion-vm-main/
 cp user-data.yaml /var/lib/vz/snippets/${ROLE_SLUG}-user-data.yaml
 
 # TODO: Stage custom config here!
@@ -40,26 +33,24 @@ pvesh create /cluster/mapping/dir --id "${ROLE_SLUG}-virtiofs" --map node=$(host
 
 pvesh create /datacenter/directory-mappings --name "${ROLE_SLUG}-virtiofs" --path /var/lib/vz/virtiofs/${ROLE_SLUG}/ --node $(hostname)
 # Add the FS to the node:
-qm set "${VMID}"--virtiofs0 "${ROLE_SLUG}-virtiofs"
+qm set "${VMID}" --virtiofs0 "${ROLE_SLUG}-virtiofs"
 
-
-qm set "${VMID}"  --cicustom "user=local:snippets/${ROLE_SLUG}-user-data.yaml"
+# Set the custom cloud-init
+qm set "${VMID}" --cicustom "user=local:snippets/${ROLE_SLUG}-user-data.yaml"
 ```
-  
-### Mount in instance
-1. Create mount point: mkdir -p /mnt/<mntpoint
-1. Mount: mount -t virtiofs <tag> /mnt/<mntpoint.cd ss
-1. Add to /etc/fstab for persistence: <tag> /mnt/<mntpoint> virtiofs defaults,nofail 0 0. Add an empty line to prevent warnings.
-```
-# Create mount point
-mkdir -p /mnt/config
-# Mount
-mount -t virtiofs ssh-bastion-virtiofs /mnt/config
-# Add to /etc/fstab for persistence: 
-echo "ssh-bastion-virtiofs /mnt/config virtiofs defaults,nofail 0 0" | sudo tee -a "/etc/fstab" > /dev/null
-# Add an empty newline at the end of fstab to avoid warnings
-echo "" | sudo tee -a "/etc/fstab" > /dev/null
 
+## Prereqs
+
+### Enable Snippets on Proxmox
+In proxmox shell:
+```
+mkdir -pv "/var/lib/vz/snippets/"
+```
+In WebUI:
+- Go to Datacenter -> Storage -> Add -> Directory.
+- ID: Name it (e.g., snippets).
+- Directory: Enter the path (e.g., /var/lib/vz/snippets).
+- Content: Select Snippets.
 
 ## Making the base Ubuntu VM
 Ref https://www.youtube.com/watch?v=dSLRYIFMBfo
