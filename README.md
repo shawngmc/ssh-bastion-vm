@@ -22,6 +22,7 @@ cd "/var/lib/vz/virtiofs/${ROLE_SLUG}/"
 cat {"foo": "bar"} > config.json
 wget https://github.com/shawngmc/ssh-bastion-vm/archive/refs/heads/main.zip
 unzip main.zip
+rm -rf main.zip
 mv ssh-bastion-vm-main/* ./
 rm -rf ssh-bastion-vm-main/
 cp user-data.yaml /var/lib/vz/snippets/${ROLE_SLUG}-user-data.yaml
