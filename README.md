@@ -107,5 +107,4 @@ Back in WebUI:
 ## TODO
 - Split out config files and use envsubst to inject env vars ```envsubst '$var1,$var2" < template.txt > output.txt```
 - Break down sec improvements
-- Surpress console output of totp generation
 - Cleanup
