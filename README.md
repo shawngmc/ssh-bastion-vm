@@ -6,18 +6,26 @@
 ## Setup
 Ensure you have the prereqs done!
 
-
-### Create the VM
-
-### VirtIOFS and Set User Data
-In proxmox shell:
+### Setup reusable vars
 ```
 # Adjust these!
 ROLE_SLUG=ssh-bastion
+TEMPLATEID=103
 VMID=102
+VMMAC=BC:24:11:C5:A5:92
+VMIP=192.168.1.25
+```
 
-# Set up path dir
+### Create the directory mapping (one-time)
+```
 mkdir -pv "/var/lib/vz/virtiofs/${ROLE_SLUG}/"
+
+# Add the directory mapping to the host
+pvesh create /cluster/mapping/dir --id "${ROLE_SLUG}-virtiofs" --map node=$(hostname),path=/var/lib/vz/virtiofs/${ROLE_SLUG}/
+```
+
+### Stage the source
+```
 cd "/var/lib/vz/virtiofs/${ROLE_SLUG}/"
 cat {"foo": "bar"} > config.json
 wget https://github.com/shawngmc/ssh-bastion-vm/archive/refs/heads/main.zip
@@ -28,16 +36,30 @@ rm -rf ssh-bastion-vm-main/
 cp user-data.yaml /var/lib/vz/snippets/${ROLE_SLUG}-user-data.yaml
 
 # TODO: Stage custom config here!
+cp /var/lib/vz/virtiofs/ssh-bastion-config.json /var/lib/vz/virtiofs/ssh-bastion/config.json
+```
 
-# Add the directory mapping to the host
-pvesh create /cluster/mapping/dir --id "${ROLE_SLUG}-virtiofs" --map node=$(hostname),path=/var/lib/vz/virtiofs/${ROLE_SLUG}/
+### VirtIOFS and Set User Data
+```
+# Clone the template
+qm clone ${TEMPLATEID} ${VMID} --name ${ROLE_SLUG}
 
-pvesh create /datacenter/directory-mappings --name "${ROLE_SLUG}-virtiofs" --path /var/lib/vz/virtiofs/${ROLE_SLUG}/ --node $(hostname)
-# Add the FS to the node:
+# Set the MAC
+qm set ${VMID} -net0 virtio=${VMMAC},bridge=vmbr0
+
+# Add the FS to the VM:
 qm set "${VMID}" --virtiofs0 "${ROLE_SLUG}-virtiofs"
 
 # Set the custom cloud-init
 qm set "${VMID}" --cicustom "user=local:snippets/${ROLE_SLUG}-user-data.yaml"
+
+qm start "${VMID}"
+```
+
+### Rotation
+```
+qm stop ${VMID}
+qm destroy ${VMID}
 ```
 
 ## Prereqs
