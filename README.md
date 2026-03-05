@@ -77,6 +77,7 @@ In WebUI:
 
 ## Making the base Ubuntu VM
 Ref https://www.youtube.com/watch?v=dSLRYIFMBfo
+
 In WebUI:
 1. Create VM
 1. In General, give it the name you want the template to have
@@ -104,6 +105,7 @@ Back in WebUI:
 
 
 ## TODO
-- Split out config files and use envsubst to inject env vars ```envsubst < template.txt > output.txt```
+- Split out config files and use envsubst to inject env vars ```envsubst '$var1,$var2" < template.txt > output.txt```
 - Break down sec improvements
+- Surpress console output of totp generation
 - Cleanup
