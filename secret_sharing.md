@@ -34,10 +34,10 @@ Should just be visible in the guest at /sys/firmware/qemu_fw_cfg/by_name/opt/con
   
   
 ## VirtIOFS
-### Prep secret
+### Prep filesystem location
 1. Log in to your Proxmox shell.
-1. Create a directory to pass in; example for these in /var/lib/vz/secrets/<vmid>/
-1. Create your file with secrets to pass in at /var/lib/vz/secrets/<vmid>/config.json
+1. Create a directory to pass in; example for these in /var/lib/vz/virtiofs/<role-slug>/
+1. Create your file with secrets to pass in at /var/lib/vz/virtiofs/<role-slug>/config.json
   
 ### Add via WebUI
 #### Prep the Directory Mapping 
@@ -46,7 +46,7 @@ Should just be visible in the guest at /sys/firmware/qemu_fw_cfg/by_name/opt/con
 1. Click the Add button at the top.
 1. In the dialog box, provide the following details:
   - Name: A name for your mapping (e.g., VMShareMapping).
-  - Path: The absolute path to the directory on your Proxmox host (e.g., /var/lib/vz/secrets/<vmid>/).
+  - Path: The absolute path to the directory on your Proxmox host (e.g., /var/lib/vz/virtiofs/<role-slug>/).
   - Node: Select the Proxmox node where the directory is located (if you have a cluster).
   - Comment (Optional): A description for your reference.
 
@@ -58,30 +58,32 @@ Should just be visible in the guest at /sys/firmware/qemu_fw_cfg/by_name/opt/con
 1. Start the VM.
   
 ### Add via CLI
-1. Add the directory mapping to the host ```pvesh create /datacenter/directory-mappings --name <share-name> --path /var/lib/vz/secrets/<vmid>/ --node <proxmox-node-name>
-```
-1. Add the FS to the node: ```qm set <VMID> --virtiofs0 <share-name>,size=<size-in-GiB>```
+1. 
+1. Add the directory mapping to the host ```pvesh create /cluster/mapping/dir --id <share-name> --map node=<proxmox-node-name>,path=/var/lib/vz/virtiofs/<role-slug>/```
+1. Add the FS to the node: ```qm set <VMID> --virtiofs0 <share-name>```
   
 ```
 # Add the directory mapping to the host
 # TODO: See if hostname is OK
-pvesh create /datacenter/directory-mappings --name config-tag --path /var/lib/vz/secrets/VM210/ --node $(hostname)
+pvesh create /cluster/mapping/dir --id ssh-bastion-virtiofs --map node=$(hostname),path=/var/lib/vz/virtiofs/ssh-bastion/
+
+pvesh create /datacenter/directory-mappings --name ssh-bastion-virtiofs --path /var/lib/vz/virtiofs/ssh-bastion/ --node $(hostname)
 # Add the FS to the node:
-qm set VM210 --virtiofs0 config-tag,size=1G
+qm set 102 --virtiofs0 ssh-bastion-virtiofs
   
 ```
   
 ### Mount in instance
 1. Create mount point: mkdir -p /mnt/<mntpoint
-1. Mount: mount -t virtiofs <tag> /mnt/<mntpoint.
+1. Mount: mount -t virtiofs <tag> /mnt/<mntpoint.cd ss
 1. Add to /etc/fstab for persistence: <tag> /mnt/<mntpoint> virtiofs defaults,nofail 0 0. Add an empty line to prevent warnings.
 ```
 # Create mount point
 mkdir -p /mnt/config
 # Mount
-mount -t virtiofs <tag> /mnt/config
+mount -t virtiofs ssh-bastion-virtiofs /mnt/config
 # Add to /etc/fstab for persistence: 
-echo "config_tag /mnt/config virtiofs defaults,nofail 0 0" | sudo tee -a "/etc/fstab" > /dev/null
+echo "ssh-bastion-virtiofs /mnt/config virtiofs defaults,nofail 0 0" | sudo tee -a "/etc/fstab" > /dev/null
 # Add an empty newline at the end of fstab to avoid warnings
 echo "" | sudo tee -a "/etc/fstab" > /dev/null
 ```

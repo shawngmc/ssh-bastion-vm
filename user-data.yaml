@@ -13,7 +13,7 @@ disable_root: true
 runcmd:
   - apt-get update
   - mkdir -p /mnt/config
-  - mount -t virtiofs config-tag /mnt/config
-  - echo "config-tag /mnt/config virtiofs defaults,nofail 0 0" | sudo tee -a "/etc/fstab" > /dev/null
+  - mount -t virtiofs ssh-bastion-virtiofs /mnt/config
+  - echo "ssh-bastion-virtiofs /mnt/config virtiofs defaults,nofail 0 0" | sudo tee -a "/etc/fstab" > /dev/null
   - echo "" | sudo tee -a "/etc/fstab" > /dev/null
   - /mnt/config/prep.sh
