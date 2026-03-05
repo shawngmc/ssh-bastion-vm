@@ -9,3 +9,5 @@ maxretry = 3
 bantime  = 3600
 findtime = 600
 EOF
+
+systemctl enable --now fail2ban

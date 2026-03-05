@@ -56,3 +56,8 @@ HostKey /etc/ssh/ssh_host_rsa_key
 # User limitation
 AllowUsers ${USERNAME}
 EOF
+
+# Comment out the common-auth include to disable password auth since we're using 2FA
+sudo sed -i '/@include common-auth/s/^/#/' /etc/pam.d/sshd
+
+systemctl restart ssh
