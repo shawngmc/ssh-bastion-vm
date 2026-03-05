@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cat >/etc/ssmtp/ssmtp.conf << 'EOF'
+EMAIL=$(jq -r .email /mnt/config/config.json)
+cat >/etc/ssmtp/ssmtp.conf << EOF
 bash
-root=shawngmc@gmail.com
+root=${EMAIL}
 mailhub=smtp.gmail.com:587
 hostname=smtp.gmail.com
 UseTLS=YES
 UseSTARTTLS=YES
-AuthUser=shawngmc@gmail.com
+AuthUser=${EMAIL}
 AuthPass=$(jq -r .gmailapppassword /mnt/config/config.json)
 FromLineOverride=YES
 EOF

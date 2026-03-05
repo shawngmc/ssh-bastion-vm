@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cat > /etc/ssh/sshd_config << 'EOF'
+USERNAME=$(jq -r .username /mnt/config/config.json)
+cat > /etc/ssh/sshd_config << EOF
 # Network
 Port 22
 AddressFamily inet
@@ -53,5 +54,5 @@ HostKey /etc/ssh/ssh_host_ed25519_key
 HostKey /etc/ssh/ssh_host_rsa_key
 
 # User limitation
-AllowUsers shawn
+AllowUsers ${USERNAME}
 EOF

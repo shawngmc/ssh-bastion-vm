@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+
+EMAIL=$(jq -r .email /mnt/config/config.json)
 cat > /etc/apt/apt.conf.d/50unattended-upgrades << 'EOF'
 // Enable security updates
 Unattended-Upgrade::Allowed-Origins {
@@ -19,10 +21,12 @@ Unattended-Upgrade::Automatic-Reboot "false";
 // schedule them for a maintenance window instead:
 // Unattended-Upgrade::Automatic-Reboot "true";
 // Unattended-Upgrade::Automatic-Reboot-Time "03:00";
+EOF
 
+cat > /etc/apt/apt.conf.d/50unattended-upgrades << EOF
 // Email alerts on failures (optional but recommended)
 // TODO: Need an MTA for this
-Unattended-Upgrade::Mail "shawngmc@gmail.com";
+Unattended-Upgrade::Mail "${EMAIL}";
 Unattended-Upgrade::MailReport "on-change";
 EOF
 systemctl enable --now unattended-upgrades
