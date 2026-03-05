@@ -11,4 +11,5 @@ apt-get install -y \
   libpam-google-authenticator \
   qemu-guest-agent \
   jq \
-  ssmtp
+  ssmtp \
+  mailutils
