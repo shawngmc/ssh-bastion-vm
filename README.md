@@ -27,7 +27,6 @@ pvesh create /cluster/mapping/dir --id "${ROLE_SLUG}-virtiofs" --map node=$(host
 ### Stage the source
 ```
 cd "/var/lib/vz/virtiofs/${ROLE_SLUG}/"
-cat {"foo": "bar"} > config.json
 wget https://github.com/shawngmc/ssh-bastion-vm/archive/refs/heads/main.zip
 unzip main.zip
 rm -rf main.zip
@@ -39,7 +38,7 @@ cp user-data.yaml /var/lib/vz/snippets/${ROLE_SLUG}-user-data.yaml
 cp /var/lib/vz/virtiofs/ssh-bastion-config.json /var/lib/vz/virtiofs/ssh-bastion/config.json
 ```
 
-### VirtIOFS and Set User Data
+### Create instance
 ```
 # Clone the template
 qm clone ${TEMPLATEID} ${VMID} --name ${ROLE_SLUG}
@@ -54,6 +53,12 @@ qm set "${VMID}" --virtiofs0 "${ROLE_SLUG}-virtiofs"
 qm set "${VMID}" --cicustom "user=local:snippets/${ROLE_SLUG}-user-data.yaml"
 
 qm start "${VMID}"
+```
+
+### Testing (from another host)
+```
+pip3 install ssh-audit
+ssh-audit ${VMIP}
 ```
 
 ### Rotation
@@ -77,7 +82,6 @@ In WebUI:
 
 ## Making the base Ubuntu VM
 Ref https://www.youtube.com/watch?v=dSLRYIFMBfo
-
 In WebUI:
 1. Create VM
 1. In General, give it the name you want the template to have

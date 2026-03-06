@@ -30,7 +30,6 @@ fs.protected_symlinks = 1
 
 # Secrets & Key Management
 - Rotate host keys periodically - especially after any suspected compromise or personnel change.
-- ssh-audit - run ssh-audit <host> against your server to get a graded report of your cipher/key/config posture. Good to run after any config change.
 
 # Monitoring & Alerting
 - Centralized logging - ship auth.log to a remote syslog or SIEM (Loki, Graylog, Splunk) so logs survive a compromise of the VM.
@@ -70,3 +69,4 @@ action   = %(action_)s
 - Alert on: logins outside business hours - NOT MEANINGFUL FOR MY CASE
 - Audit authorized_keys regularly - stale keys from former users are a common, silent entry point. - NOT PROGRAMMABLE
 - Port knocking or Single Packet Authorization (SPA) - fwknop implements SPA, which keeps port 22 completely invisible (DROP, not REJECT) until a valid encrypted knock arrives. Eliminates exposure to automated scanners entirely. - REQUIRES A CLIENT TOOL
+- ssh-audit - run ssh-audit <host> against your server to get a graded report of your cipher/key/config posture. Good to run after any config change.
