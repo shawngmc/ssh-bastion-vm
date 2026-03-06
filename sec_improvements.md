@@ -12,7 +12,6 @@
 - Wazuh or OSSEC - full HIDS combining log analysis, file integrity, and active response. Wazuh also ships a SIEM if you want centralized visibility across VMs.
 
 # OS Hardening
-- AppArmor profile for sshd - Ubuntu ships one by default; verify it's enforcing with aa-status. Constrains what sshd can access even if exploited.
 - Remove compilers and dev tools - apt-get remove gcc g++ make perl reduces post-compromise capability significantly.
 - Disable unused services - systemctl list-units --type=service --state=running and disable everything not needed.
 - Kernel hardening via sysctl:
@@ -42,20 +41,7 @@ fs.protected_symlinks = 1
 The highest-leverage combination for most use cases is: VPN-only access (WireGuard/Tailscale) + FIDO2 hardware keys + unattended-upgrades + auditd + centralized log shipping. That eliminates internet exposure entirely, requires physical hardware to authenticate, and ensures you have tamper-evident logs even if the VM is compromised.
 
 # TODO
-## Mail-on-ban
-Make /etc/fail2ban/action.d/mail-on-ban.conf
-```
-[Definition]
-actionban = echo "fail2ban banned <ip> from jail '<name>' on $(hostname -f)\n\nMatched lines:\n<matches>" \
-            | mail -s "🚫 [$(hostname -f)] fail2ban: <ip> banned from <name>" you@example.com
-```
-Wire it into your jail in /etc/fail2ban/jail.local:
-```
-ini[sshd]
-enabled  = true
-action   = %(action_)s
-           mail-on-ban
-```
+
 
 # DONE
 - Restrict allowed users - add AllowUsers youruser or AllowGroups sshusers to sshd_config. Explicit allowlist beats relying on account hardening alone.
@@ -69,4 +55,5 @@ action   = %(action_)s
 - Alert on: logins outside business hours - NOT MEANINGFUL FOR MY CASE
 - Audit authorized_keys regularly - stale keys from former users are a common, silent entry point. - NOT PROGRAMMABLE
 - Port knocking or Single Packet Authorization (SPA) - fwknop implements SPA, which keeps port 22 completely invisible (DROP, not REJECT) until a valid encrypted knock arrives. Eliminates exposure to automated scanners entirely. - REQUIRES A CLIENT TOOL
-- ssh-audit - run ssh-audit <host> against your server to get a graded report of your cipher/key/config posture. Good to run after any config change.
+- ssh-audit - run ssh-audit <host> against your server to get a graded report of your cipher/key/config posture. Good to run after any config change. - TESTING ONLY
+- AppArmor profile for sshd - Ubuntu ships one by default; verify it's enforcing with aa-status. Constrains what sshd can access even if exploited. - TESTING ONLY

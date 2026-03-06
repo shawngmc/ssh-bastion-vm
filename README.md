@@ -55,17 +55,25 @@ qm set "${VMID}" --cicustom "user=local:snippets/${ROLE_SLUG}-user-data.yaml"
 qm start "${VMID}"
 ```
 
-### Testing (from another host)
-```
-pip3 install ssh-audit
-ssh-audit ${VMIP}
-```
 
 ### Rotation
 ```
 qm stop ${VMID}
 qm destroy ${VMID}
 ```
+
+
+## Testing 
+### SSH config audit (from another host)
+```
+pip3 install ssh-audit
+ssh-audit ${VMIP}
+```
+### AppArmor (on instance)
+```
+sudo aa-status
+```
+
 
 ## Prereqs
 

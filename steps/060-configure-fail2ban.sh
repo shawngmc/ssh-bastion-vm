@@ -1,13 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cat > /etc/fail2ban/jail.local << 'EOF'
-[sshd]
-enabled  = true
-port     = ssh
-maxretry = 3
-bantime  = 3600
-findtime = 600
-EOF
+cp ../templates/fail2ban/jail.local /etc/fail2ban/jail.local
+export EMAIL=$(jq -r .email /mnt/config/config.json)
+envsubst '$EMAIL' < ../templates/fail2ban/mail-on-ban.conf > /etc/fail2ban/action.d/mail-on-ban.conf
 
 systemctl enable --now fail2ban
