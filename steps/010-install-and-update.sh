@@ -12,4 +12,5 @@ apt-get install -y \
   qemu-guest-agent \
   jq \
   ssmtp \
-  mailutils
+  mailutils \
+  mosh
